@@ -1,9 +1,12 @@
 import { useComponentStore } from '@/stores/componentStore'
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { useProjectStore } from '@/stores/projectStore'
 
 export function ComponentSelector() {
   const { components } = useComponentStore()
   const [query, setQuery] = useState('')
+  const { currentProjectId, saveProject } = useProjectStore()
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase()
@@ -23,7 +26,18 @@ export function ComponentSelector() {
               <div className="font-medium">{c.name}</div>
               <div className="text-xs text-slate-500">{c.category}</div>
             </div>
-            <button className="px-2 py-1 rounded border text-xs">Add</button>
+            <button
+              className="px-2 py-1 rounded border text-xs"
+              onClick={async () => {
+                if (!currentProjectId) {
+                  toast.error('Open or create a project first')
+                  return
+                }
+                // Append component to project data array
+                await saveProject(currentProjectId, { add: { componentId: c.id, at: Date.now() } })
+                toast.success('Added to project')
+              }}
+            >Add</button>
           </div>
         ))}
       </div>
