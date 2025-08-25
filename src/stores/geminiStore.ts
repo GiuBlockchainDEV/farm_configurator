@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { sendGeminiMessage } from '@/services/gemini'
+import { useSettingsStore } from '@/stores/settingsStore'
 
 export type ChatMessage = { id: string; role: 'user' | 'assistant'; content: string }
 
@@ -16,7 +17,8 @@ export const useGeminiStore = create<GeminiState>((set, get) => ({
     const userMsg: ChatMessage = { id: crypto.randomUUID(), role: 'user', content }
     set(state => ({ messages: [...state.messages, userMsg], isLoading: true }))
     try {
-      const assistantText = await sendGeminiMessage([...get().messages, userMsg])
+      const apiKey = useSettingsStore.getState().geminiApiKey
+      const assistantText = await sendGeminiMessage([...get().messages, userMsg], apiKey)
       const assistantMsg: ChatMessage = { id: crypto.randomUUID(), role: 'assistant', content: assistantText }
       set(state => ({ messages: [...state.messages, assistantMsg] }))
     } finally {

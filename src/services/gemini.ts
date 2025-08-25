@@ -4,16 +4,15 @@ import type { ChatMessage } from '@/stores/geminiStore'
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
 const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-1.5-flash'
 
-export async function sendGeminiMessage(history: ChatMessage[]): Promise<string> {
-  if (!GEMINI_API_KEY) {
-    return 'Gemini API key not configured. Set VITE_GEMINI_API_KEY in .env.'
-  }
+export async function sendGeminiMessage(history: ChatMessage[], apiKeyOverride?: string): Promise<string> {
+  const apiKey = apiKeyOverride || GEMINI_API_KEY
+  if (!apiKey) return 'Gemini API key not configured. Add it in Settings.'
 
   // Minimal placeholder using Google Generative Language API-compatible endpoint via proxy or direct
   try {
     const userText = history.filter(h => h.role === 'user').slice(-1)[0]?.content || ''
     const { data } = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
       {
         contents: [
           {
